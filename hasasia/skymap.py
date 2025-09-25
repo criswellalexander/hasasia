@@ -35,12 +35,14 @@ class SkySensitivity(DeterSensitivityCurve):
         Gravitational wave source sky location longitude at which to
         calculate sky map.
 
-    pulsar_term : bool, str, optional [True, False, 'explicit']
+    pulsar_term : bool, str, optional [True, False, 'explicit', 'only']
         Flag for including the pulsar term in sky map sensitivity. True
         includes an idealized factor of two from Equation (36) of `[1]`_.
         The `'explicit'` flag turns on an explicit calculation of
-        pulsar terms using pulsar distances. (This option takes
-        considerably more computational resources.)
+        pulsar terms using pulsar distances; the 'only' flag computes only
+        the pulsar-pulsar autocorrelation term, neglecting the Earth term 
+        contribution(These latter two options take considerably more 
+        computational resources.)
 
         .. _[1]: https://arxiv.org/abs/1907.04341
 
@@ -88,6 +90,12 @@ class SkySensitivity(DeterSensitivityCurve):
             pt = 1-np.exp(-1j*2*np.pi*Dp)
             pt /= 2*np.pi*1j*self.freqs[:,np.newaxis,np.newaxis]
             self.pt_sqr = np.abs(pt)**2
+        elif pulsar_term == 'only':
+            Dp = self.pdists[:,np.newaxis] * denom
+            Dp = self.freqs[:,np.newaxis,np.newaxis] * Dp[np.newaxis,:,:]
+            pt = -np.exp(-1j*2*np.pi*Dp)
+            pt /= 2*np.pi*1j*self.freqs[:,np.newaxis,np.newaxis]
+            self.pt_sqr = np.abs(pt)**2
 
         if pol=='gr':
             self.Fplus = np.einsum('ijkl, ijl ->kl',self.D, self.eplus)
@@ -104,7 +112,7 @@ class SkySensitivity(DeterSensitivityCurve):
             self.Fy = np.einsum('ijkl, ijl ->kl',self.D, self.e_y)
             self.sky_response = self.Fx**2 + self.Fy**2
 
-        if pulsar_term == 'explicit':
+        if (pulsar_term == 'explicit') or (pulsar_term == 'only'):
             self.sky_response = (0.5 * self.sky_response[np.newaxis,:,:]
                                  * self.pt_sqr)
 
