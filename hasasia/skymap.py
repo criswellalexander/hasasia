@@ -57,7 +57,7 @@ class SkySensitivity(DeterSensitivityCurve):
         self.theta_gw = theta_gw
         self.phi_gw = phi_gw
         self.pos = - khat(self.thetas, self.phis)
-        if pulsar_term == 'explicit':
+        if (self.pulsar_term == 'explicit') or (self.pulsar_term == 'only'):
             self.pdists = np.array([(sp.pdist/c.c).to('s').value
                                     for sp in spectra]) #pulsar distances
 
@@ -273,7 +273,7 @@ class SkySensitivity(DeterSensitivityCurve):
         """Per Pulsar Strain power sensitivity. """
         t_I = self.T_I / self.Tspan
         RNcalInv = 3.0 * t_I[:,np.newaxis] / self.SnI
-        if self.pulsar_term == 'explicit':
+        if (self.pulsar_term == 'explicit') or (self.pulsar_term == 'only'):
             raise NotImplementedError('Currently cannot use pulsar term.')
             # RNcalInv /= resid_response(self.freqs)
             # self._S_SkyI_full = RNcalInv.T[:,:,np.newaxis] * self.sky_response
@@ -307,7 +307,7 @@ class SkySensitivity(DeterSensitivityCurve):
             Polarization angle of the source.
 
         """
-        if self.pulsar_term == 'explicit':
+        if (self.pulsar_term == 'explicit') or (self.pulsar_term == 'only'):
             raise NotImplementedError('Currently cannot use pulsar term.')
             # self._S_eff_full = 1.0 / (4./5 * np.sum(self.S_SkyI, axis=1))
         elif self.pulsar_term:
@@ -555,7 +555,7 @@ class SkySensitivity(DeterSensitivityCurve):
         .. _[1]: https://arxiv.org/abs/1907.04341
         """
         if not hasattr(self, '_S_eff'):
-            if self.pulsar_term == 'explicit':
+            if (self.pulsar_term == 'explicit') or (self.pulsar_term == 'only'):
                 self._S_eff = 1.0 / (16./5 * np.sum(self.S_SkyI, axis=1))
             elif self.pulsar_term:
                 self._S_eff = 1.0 / (48./5 * np.sum(self.S_SkyI, axis=1))
@@ -572,7 +572,7 @@ class SkySensitivity(DeterSensitivityCurve):
         if not hasattr(self, '_S_SkyI'):
             t_I = self.T_I / self.Tspan
             RNcalInv = t_I[:,np.newaxis] / self.SnI
-            if self.pulsar_term == 'explicit':
+            if (self.pulsar_term == 'explicit') or (self.pulsar_term == 'only'):
                 RNcalInv /= resid_response(self.freqs)
                 self._S_SkyI = RNcalInv.T[:,:,np.newaxis] * self.sky_response
             else:
